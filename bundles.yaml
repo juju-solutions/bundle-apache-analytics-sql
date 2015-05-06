@@ -8,6 +8,12 @@ apache-analytics-sql:
       annotations:
         "gui-x": "600"
         "gui-y": "350"
+    "secondary-namenode":
+      charm: "cs:~bigdata-dev/trusty/apache-hadoop-hdfs-secondary"
+      num_units: 1
+      annotations:
+        "gui-x": "600"
+        "gui-y": "600"
     "yarn-master":
       charm: "cs:~bigdata-dev/trusty/apache-hadoop-yarn-master"
       num_units: 1
@@ -20,7 +26,19 @@ apache-analytics-sql:
       num_units: 3
       constraints: mem=4G
       annotations:
+        "gui-x": "300"
+        "gui-y": "200"
+    "plugin":
+      charm: "cs:~bigdata-dev/trusty/apache-hadoop-plugin"
+      annotations:
         "gui-x": "900"
+        "gui-y": "200"
+    "hive":
+      charm: "cs:~bigdata-dev/trusty/apache-hive"
+      num_units: 1
+      constraints: mem=4G
+      annotations:
+        "gui-x": "1200"
         "gui-y": "200"
     "mysql":
       charm: "cs:trusty/mysql"
@@ -28,26 +46,14 @@ apache-analytics-sql:
       options:
         binlog-format: "ROW"
       annotations:
-        "gui-x": "600"
-        "gui-y": "600"
-    "client":
-      charm: "cs:~bigdata-dev/trusty/apache-hadoop-client"
-      num_units: 1
-      constraints: mem=4G
-      annotations:
-        "gui-x": "300"
-        "gui-y": "200"
-    "hive":
-      charm: "cs:~bigdata-dev/trusty/apache-hive"
-      num_units: 1
-      annotations:
-        "gui-x": "300"
-        "gui-y": "600"
+        "gui-x": "1200"
+        "gui-y": "450"
   relations:
     - [yarn-master, hdfs-master]
+    - [secondary-namenode, hdfs-master]
     - [compute-slave, yarn-master]
     - [compute-slave, hdfs-master]
-    - [client, yarn-master]
-    - [client, hdfs-master]
-    - [hive, client]
+    - [plugin, yarn-master]
+    - [plugin, hdfs-master]
+    - [hive, plugin]
     - [hive, mysql]
