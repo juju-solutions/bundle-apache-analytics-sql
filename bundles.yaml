@@ -11,6 +11,7 @@ apache-analytics-sql:
     "secondary-namenode":
       charm: "cs:~bigdata-dev/trusty/apache-hadoop-hdfs-secondary"
       num_units: 1
+      constraints: mem=8G
       annotations:
         "gui-x": "600"
         "gui-y": "600"
