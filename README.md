@@ -91,7 +91,7 @@ Or you can add multiple units at once:
 
 ## Contact Information
 
-- [bigdata-dev@canonical.com](mailto:bigdata-dev@canonical.com)
+- [bigdata-dev@lists.launchpad.net](mailto:bigdata-dev@lists.launchpad.net)
 
 ## Help
 
