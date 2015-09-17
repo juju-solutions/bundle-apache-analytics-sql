@@ -15,7 +15,7 @@ Hadoop components and MySQL, it contains the following units:
 ## Usage
 Deploy this bundle using juju-quickstart:
 
-    juju quickstart u/bigdata-dev/apache-analytics-sql
+    juju quickstart apache-analytics-sql
 
 See `juju quickstart --help` for deployment options, including machine 
 constraints and how to deploy a locally modified version of the
