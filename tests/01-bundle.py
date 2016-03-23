@@ -19,10 +19,9 @@ class TestBundle(unittest.TestCase):
         cls.d.load(bundle)
         cls.d.setup(timeout=1800)
         cls.d.sentry.wait_for_messages({'hive': 'Ready'}, timeout=1800)
-        cls.hdfs = cls.d.sentry['hdfs-master'][0]
-        cls.yarn = cls.d.sentry['yarn-master'][0]
-        cls.slave = cls.d.sentry['compute-slave'][0]
-        cls.secondary = cls.d.sentry['secondary-namenode'][0]
+        cls.hdfs = cls.d.sentry['namenode'][0]
+        cls.yarn = cls.d.sentry['resourcemanager'][0]
+        cls.slave = cls.d.sentry['slave'][0]
         cls.hive = cls.d.sentry['hive'][0]
 
     def test_components(self):
@@ -32,45 +31,33 @@ class TestBundle(unittest.TestCase):
         hdfs, retcode = self.hdfs.run("pgrep -a java")
         yarn, retcode = self.yarn.run("pgrep -a java")
         slave, retcode = self.slave.run("pgrep -a java")
-        secondary, retcode = self.secondary.run("pgrep -a java")
         hive, retcode = self.hive.run("pgrep -a java")
 
         # .NameNode needs the . to differentiate it from SecondaryNameNode
         assert '.NameNode' in hdfs, "NameNode not started"
-        assert '.NameNode' not in yarn, "NameNode should not be running on yarn-master"
-        assert '.NameNode' not in slave, "NameNode should not be running on compute-slave"
-        assert '.NameNode' not in secondary, "NameNode should not be running on secondary-namenode"
+        assert '.NameNode' not in yarn, "NameNode should not be running on resourcemanager"
+        assert '.NameNode' not in slave, "NameNode should not be running on slave"
         assert '.NameNode' not in hive, "NameNode should not be running on hive"
 
         assert 'ResourceManager' in yarn, "ResourceManager not started"
-        assert 'ResourceManager' not in hdfs, "ResourceManager should not be running on hdfs-master"
-        assert 'ResourceManager' not in slave, "ResourceManager should not be running on compute-slave"
-        assert 'ResourceManager' not in secondary, "ResourceManager should not be running on secondary-namenode"
+        assert 'ResourceManager' not in hdfs, "ResourceManager should not be running on namenode"
+        assert 'ResourceManager' not in slave, "ResourceManager should not be running on slave"
         assert 'ResourceManager' not in hive, "ResourceManager should not be running on hive"
 
         assert 'JobHistoryServer' in yarn, "JobHistoryServer not started"
-        assert 'JobHistoryServer' not in hdfs, "JobHistoryServer should not be running on hdfs-master"
-        assert 'JobHistoryServer' not in slave, "JobHistoryServer should not be running on compute-slave"
-        assert 'JobHistoryServer' not in secondary, "JobHistoryServer should not be running on secondary-namenode"
+        assert 'JobHistoryServer' not in hdfs, "JobHistoryServer should not be running on namenode"
+        assert 'JobHistoryServer' not in slave, "JobHistoryServer should not be running on slave"
         assert 'JobHistoryServer' not in hive, "JobHistoryServer should not be running on hive"
 
         assert 'NodeManager' in slave, "NodeManager not started"
-        assert 'NodeManager' not in yarn, "NodeManager should not be running on yarn-master"
-        assert 'NodeManager' not in hdfs, "NodeManager should not be running on hdfs-master"
-        assert 'NodeManager' not in secondary, "NodeManager should not be running on secondary-namenode"
+        assert 'NodeManager' not in yarn, "NodeManager should not be running on resourcemanager"
+        assert 'NodeManager' not in hdfs, "NodeManager should not be running on namenode"
         assert 'NodeManager' not in hive, "NodeManager should not be running on hive"
 
         assert 'DataNode' in slave, "DataServer not started"
-        assert 'DataNode' not in yarn, "DataNode should not be running on yarn-master"
-        assert 'DataNode' not in hdfs, "DataNode should not be running on hdfs-master"
-        assert 'DataNode' not in secondary, "DataNode should not be running on secondary-namenode"
+        assert 'DataNode' not in yarn, "DataNode should not be running on resourcemanager"
+        assert 'DataNode' not in hdfs, "DataNode should not be running on namenode"
         assert 'DataNode' not in hive, "DataNode should not be running on hive"
-
-        assert 'SecondaryNameNode' in secondary, "SecondaryNameNode not started"
-        assert 'SecondaryNameNode' not in yarn, "SecondaryNameNode should not be running on yarn-master"
-        assert 'SecondaryNameNode' not in hdfs, "SecondaryNameNode should not be running on hdfs-master"
-        assert 'SecondaryNameNode' not in slave, "SecondaryNameNode should not be running on compute-slave"
-        assert 'SecondaryNameNode' not in hive, "SecondaryNameNode should not be running on hive"
 
         assert 'HiveServer2' in hive, 'Hive should be running on hive'
 
@@ -108,7 +95,8 @@ class TestBundle(unittest.TestCase):
             ('terasort',     "su ubuntu -c 'hadoop jar {} terasort /user/ubuntu/teragenout /user/ubuntu/terasortout'".
                 format(jar_file)),
             ('mapreduce #2', "su hdfs -c 'hdfs dfs -ls /user/ubuntu/terasortout/_SUCCESS'"),
-            ('cleanup',      "su hdfs -c 'hdfs dfs -rm -r /user/ubuntu/teragenout'"),
+            ('cleanup #1',   "su hdfs -c 'hdfs dfs -rm -r /user/ubuntu/teragenout'"),
+            ('cleanup #2',   "su hdfs -c 'hdfs dfs -rm -r /user/ubuntu/terasortout'"),
         ]
         for name, step in test_steps:
             output, retcode = self.hive.run(step)
