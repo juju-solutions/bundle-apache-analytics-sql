@@ -102,12 +102,45 @@ class TestBundle(unittest.TestCase):
             output, retcode = self.hive.run(step)
             assert retcode == 0, "{} FAILED:\n{}".format(name, output)
 
-    def test_hive(self):
-        self.hive.run("echo 'create table test(col1 int, col2 string); show tables;' > test.sql")
-        output, retcode = self.hive.run("sudo su hive -c 'hive -f test.sql'")
-
+    def _run_sql(self, cmd, sql):
+        output, retcode = self.hive.run((
+            "echo '{sql}' > test.sql; "
+            "sudo su hive -c '{cmd} -f test.sql 2>&1'"
+        ).format(cmd=cmd, sql=sql))
         assert retcode == 0, 'Hive command failed (%s): %s' % (retcode, output)
-        self.assertEqual('test', output)
+        return output
+
+    def test_hive(self):
+        output = self._run_sql('hive', 'show tables;')
+        self.assertNotIn('test_cli', output)
+
+        output = self._run_sql(
+            'hive',
+            'create table test_cli(col1 int, col2 string); '
+            'show tables;')
+        self.assertIn('test_cli', output)
+        self._run_sql('hive', 'drop table test_cli;')
+
+    def test_beeline(self):
+        output = self._run_sql(
+            'beeline',
+            '!connect jdbc:hive2://localhost:10000 hive password'
+            ' org.apache.hive.jdbc.HiveDriver;'
+            'show tables;')
+        self.assertNotIn('test_beeline', output)
+
+        output = self._run_sql(
+            'beeline',
+            '!connect jdbc:hive2://localhost:10000 hive password'
+            ' org.apache.hive.jdbc.HiveDriver;'
+            'create table test_beeline(col1 int, col2 string); '
+            'show tables;')
+        self.assertIn('test_beeline', output)
+        self._run_sql(
+            'beeline',
+            '!connect jdbc:hive2://localhost:10000 hive password'
+            ' org.apache.hive.jdbc.HiveDriver;'
+            'drop table test_beeline;')
 
 
 if __name__ == '__main__':
