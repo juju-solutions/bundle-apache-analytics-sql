@@ -32,8 +32,8 @@ services:
       gui-x: "1200"
       gui-y: "200"
     constraints: mem=3G
-  mysql:
-    charm: cs:trusty/mysql-36
+  mariadb:
+    charm: cs:trusty/mariadb-2
     num_units: 1
     options:
       binlog-format: ROW
@@ -48,4 +48,4 @@ relations:
   - [plugin, namenode]
   - [plugin, resourcemanager]
   - [hive, plugin]
-  - [hive, mysql]
+  - [hive, mariadb]
